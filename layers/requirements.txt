@@ -1,0 +1,16 @@
+boto3
+botocore
+certifi
+charset-normalizer
+idna
+jmespath
+pybit
+pycryptodome
+python-dateutil
+requests
+s3transfer
+six
+urllib3
+websocket-client
+websockets
+aws-lambda-powertools

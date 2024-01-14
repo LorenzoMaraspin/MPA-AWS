@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  MPA-AWS
+
+  Sample SAM Template for MPA-AWS
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  MPAOperativeSelectionParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: "Parameter to specify which operativity type to choose"
+      Name: 'mpa_ops_type'
+      AllowedPattern: "^(OPS-1|OPS-2|OPS-3)$"
+      Type: StringList
+      Value: 'OPS-1'
+  MPAOperativeParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: "Parameter to specify TP/SL to be used with Full trade management"
+      Name: 'mpa_ops_1'
+      Type: StringList
+      Value: '[{"tp_percentage":0.3,"sl_percentage": 4.5, "size": "75"},{"tp_percentage":4,"sl_percentage": 4.5, "size": "25"}]'
+  MPAOperative2Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: "Parameter to specify TP/SL to be used with Partial trade management"
+      Name: 'mpa_ops_2'
+      Type: StringList
+      Value: '[{"tp_percentage":0.3,"sl_percentage": 5, "size": "50"},{"tp_percentage":0.5,"sl_percentage": 5, "size": "25"},{"tp_percentage":0.75,"sl_percentage": 5, "size": "12.5"},{"tp_percentage":1,"sl_percentage": 5, "size": "6.25"}]'
+  MPALambdaLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: mpa-layer
+      Description: My Python dependencies
+      ContentUri: layers/
+      CompatibleRuntimes:
+        - python3.11
+      LicenseInfo: 'MIT'
+      RetentionPolicy: Retain
+      CompatibleArchitectures:
+        - x86_64
+    Metadata:
+      BuildMethod: python3.11
+      BuildArchitecture: x86_64
+  MPATriggerTrade:
+    Type: AWS::Serverless::Function
+    Properties:
+      Layers:
+        - !Ref MPALambdaLayer
+      CodeUri: lambda_function/
+      Handler: handler.lambda_handler
+      Runtime: python3.11
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: MPA
+          POWERTOOLS_LOG_LEVEL: INFO
+          ENV: dev
+          DEV_AWS_SECRET: BybitTestnetMPADEV
+          PROD_AWS_SECRET: Bybit
+          BYBIT_ORDER_TYPE: Market
+          BYBIT_CATEGORY: linear
+          BYBIT_MARKET_UNIT: quoteCoin
+          BYBIT_ACCOUNT_TYPE: UNIFIED
+          BYBIT_IS_LEVERAGE: 0
+          BYBIT_TRADE_MODE: 1
+          BYBIT_BUY_LEVERAGE: 20
+          BYBIT_SELL_LEVERAGE: 20
+          BYBIT_SYMBOL: BTCUSDT
+          BYBIT_TRADE_INDEX: 3
+          BYBIT_SIZE_TRADE: 0.05
+          #SSM_OPERATIVE_1_TRADE: !Ref MPAOperativeParameter
+          SSM_OPERATIVE_1_TRADE: 'mpa_ops_1'
+          #SSM_OPERATIVE_1_TRADE: !Ref MPAOperative2Parameter
+          SSM_OPERATIVE_2_TRADE: 'mpa_ops_2'
+          #BYBIT_TRADE_MANAGEMENT: !Ref MPAOperativeSelectionParameter
+          BYBIT_TRADE_MANAGEMENT: 'mpa_ops_type'
+      MemorySize: 512
