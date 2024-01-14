@@ -11,28 +11,50 @@ Globals:
     Timeout: 3
 
 Resources:
-  MPAOperativeSelectionParameter:
+  MPAOperativeSelectionLambda1Parameter:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "Parameter to specify which operativity type to choose"
-      Name: 'mpa_ops_type'
-      AllowedPattern: "^(OPS-1|OPS-2|OPS-3)$"
+      Name: 'mpa_ops_type_1'
+      AllowedPattern: "^(OPS-1|OPS-2|OPS-3|OPS-4)$"
       Type: StringList
       Value: 'OPS-1'
+  MPAOperativeSelectionLambda2Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: "Parameter to specify which operativity type to choose"
+      Name: 'mpa_ops_type_2'
+      AllowedPattern: "^(OPS-1|OPS-2|OPS-3|OPS-4)$"
+      Type: StringList
+      Value: 'OPS-3'
   MPAOperativeParameter:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "Parameter to specify TP/SL to be used with Full trade management"
       Name: 'mpa_ops_1'
       Type: StringList
-      Value: '[{"tp_percentage":0.3,"sl_percentage": 4.5, "size": "75"},{"tp_percentage":4,"sl_percentage": 4.5, "size": "25"}]'
+      Value: '[{"tp_percentage":0.2,"sl_percentage": 4.5, "size": "75"},{"tp_percentage":4,"sl_percentage": 4.5, "size": "25"}]'
   MPAOperative2Parameter:
     Type: AWS::SSM::Parameter
     Properties:
       Description: "Parameter to specify TP/SL to be used with Partial trade management"
       Name: 'mpa_ops_2'
       Type: StringList
-      Value: '[{"tp_percentage":0.3,"sl_percentage": 5, "size": "50"},{"tp_percentage":0.5,"sl_percentage": 5, "size": "25"},{"tp_percentage":0.75,"sl_percentage": 5, "size": "12.5"},{"tp_percentage":1,"sl_percentage": 5, "size": "6.25"}]'
+      Value: '[{"tp_percentage":0.2,"sl_percentage": 5, "size": "50"},{"tp_percentage":0.5,"sl_percentage": 5, "size": "25"},{"tp_percentage":0.9,"sl_percentage": 5, "size": "12.5"},{"tp_percentage":4,"sl_percentage": 5, "size": "6.25"}]'
+  MPAOperative3Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: "Parameter to specify TP/SL to be used with Partial trade management"
+      Name: 'mpa_ops_3'
+      Type: StringList
+      Value: '[{"tp_percentage":0.5,"sl_percentage": 4.5, "size": "75"}]'
+  MPAOperative4Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: "Parameter to specify TP/SL to be used with Partial trade management"
+      Name: 'mpa_ops_4'
+      Type: StringList
+      Value: '[{"tp_percentage":0.5,"sl_percentage": 4.5, "size": "75"},{"tp_percentage":4,"sl_percentage": 4.5, "size": "25"}]'
   MPALambdaLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
@@ -48,13 +70,30 @@ Resources:
     Metadata:
       BuildMethod: python3.11
       BuildArchitecture: x86_64
-  MPATriggerTrade:
+
+  MPALambdaFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Path: '/'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AdministratorAccess'
+
+  MPATriggerTradeBTCLOMA:
     Type: AWS::Serverless::Function
     Properties:
       Layers:
         - !Ref MPALambdaLayer
       CodeUri: lambda_function/
       Handler: handler.lambda_handler
+      Role: !GetAtt MPALambdaFunctionRole.Arn
       Runtime: python3.11
       Architectures:
         - x86_64
@@ -64,7 +103,7 @@ Resources:
           POWERTOOLS_LOG_LEVEL: INFO
           ENV: dev
           DEV_AWS_SECRET: BybitTestnetMPADEV
-          PROD_AWS_SECRET: Bybit
+          PROD_AWS_SECRET: BybitLoma
           BYBIT_ORDER_TYPE: Market
           BYBIT_CATEGORY: linear
           BYBIT_MARKET_UNIT: quoteCoin
@@ -78,8 +117,52 @@ Resources:
           BYBIT_SIZE_TRADE: 0.05
           #SSM_OPERATIVE_1_TRADE: !Ref MPAOperativeParameter
           SSM_OPERATIVE_1_TRADE: 'mpa_ops_1'
-          #SSM_OPERATIVE_1_TRADE: !Ref MPAOperative2Parameter
+          #SSM_OPERATIVE_2_TRADE: !Ref MPAOperative2Parameter
           SSM_OPERATIVE_2_TRADE: 'mpa_ops_2'
-          #BYBIT_TRADE_MANAGEMENT: !Ref MPAOperativeSelectionParameter
-          BYBIT_TRADE_MANAGEMENT: 'mpa_ops_type'
+          #SSM_OPERATIVE_1_TRADE: !Ref MPAOperativeParameter
+          SSM_OPERATIVE_3_TRADE: 'mpa_ops_3'
+          #SSM_OPERATIVE_1_TRADE: !Ref MPAOperative2Parameter
+          SSM_OPERATIVE_4_TRADE: 'mpa_ops_4'
+          #BYBIT_TRADE_MANAGEMENT: !Ref MPAOperativeSelectionLambda1Parameter
+          BYBIT_TRADE_MANAGEMENT: 'mpa_ops_type_1'
+      MemorySize: 512
+  MPATriggerTradeBTCLOMA2:
+    Type: AWS::Serverless::Function
+    Properties:
+      Layers:
+        - !Ref MPALambdaLayer
+      CodeUri: lambda_function/
+      Handler: handler.lambda_handler
+      Runtime: python3.11
+      Role: !GetAtt MPALambdaFunctionRole.Arn
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: MPA
+          POWERTOOLS_LOG_LEVEL: INFO
+          ENV: dev
+          DEV_AWS_SECRET: BybitTestnetMPADEV2
+          PROD_AWS_SECRET: BybitLoma
+          BYBIT_ORDER_TYPE: Market
+          BYBIT_CATEGORY: linear
+          BYBIT_MARKET_UNIT: quoteCoin
+          BYBIT_ACCOUNT_TYPE: UNIFIED
+          BYBIT_IS_LEVERAGE: 0
+          BYBIT_TRADE_MODE: 1
+          BYBIT_BUY_LEVERAGE: 20
+          BYBIT_SELL_LEVERAGE: 20
+          BYBIT_SYMBOL: BTCUSDT
+          BYBIT_TRADE_INDEX: 3
+          BYBIT_SIZE_TRADE: 0.05
+          #SSM_OPERATIVE_1_TRADE: !Ref MPAOperativeParameter
+          SSM_OPERATIVE_1_TRADE: 'mpa_ops_1'
+          #SSM_OPERATIVE_2_TRADE: !Ref MPAOperative2Parameter
+          SSM_OPERATIVE_2_TRADE: 'mpa_ops_2'
+          #SSM_OPERATIVE_1_TRADE: !Ref MPAOperativeParameter
+          SSM_OPERATIVE_3_TRADE: 'mpa_ops_3'
+          #SSM_OPERATIVE_1_TRADE: !Ref MPAOperative2Parameter
+          SSM_OPERATIVE_4_TRADE: 'mpa_ops_4'
+          #BYBIT_TRADE_MANAGEMENT: !Ref MPAOperativeSelectionLambda2Parameter
+          BYBIT_TRADE_MANAGEMENT: 'mpa_ops_type_2'
       MemorySize: 512

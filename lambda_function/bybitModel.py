@@ -60,7 +60,23 @@ class BybitModel:
         return trade_tp_sl
 
     def choose_tp_sl_strategy(self, bybit_api):
-        operativity = self._config['bybit']['trading_management']
+        operativity = str(self._config['bybit']['trading_management']).lower()
+        if operativity.startswith('ops-'):
+            operativity_selected = self._config['ssm'][operativity]
+            ops_details = self.set_multiple_tp_sl(operativity_selected)
+            for item in ops_details:
+                bybit_api.set_tp_sl(item, 'Partial')
+            logger.info(f"Selected operative type: {operativity}: {ops_details}")
+        else:
+            index = self._config['bybit']['trading_management_index']
+            operativity_selected = self._config['ssm']['ops_2_value']
+            ops_details = self.set_multiple_tp_sl(operativity_selected[index])
+            bybit_api.set_tp_sl(ops_details[index], 'Full')
+            logger.info(f"Selected operative type: OPS-3: {ops_details[index]}")
+
+    def choose_tp_sl_strategy_v2(self, bybit_api):
+        operativity = str(self._config['bybit']['trading_management'])
+
         if operativity == 'OPS-1':
             operativity_selected = self._config['ssm']['ops_1_value']
             ops_details = self.set_multiple_tp_sl(operativity_selected)

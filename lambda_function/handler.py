@@ -12,12 +12,12 @@ def lambda_handler(event, context):
 
 def main(config):
     # DEFINE BYBIT MODEL and API objects
-    btc_model = BybitModel(config)
+    model = BybitModel(config)
     bybit_client = BybitApi(config)
 
     # GET WALLET BALANCE
     wallet = bybit_client.get_wallet_balance()
-    btc_model.calculate_qty_based_on_balance(wallet)
+    model.calculate_qty_based_on_balance(wallet)
 
     # CHECK if there are OPEN POSITION to close BEFORE to OPEN NEW POSITION
     position = bybit_client.get_position_info()
@@ -26,7 +26,7 @@ def main(config):
         bybit_client.close_position(side)
 
     # OPEN NEW POSITION based on the EVENT received and SET TAKEPROFIT and STOPLOSS
-    bybit_client.open_position(btc_model._qty)
-    btc_model.choose_tp_sl_strategy(bybit_client)
+    bybit_client.open_position(model._qty)
+    model.choose_tp_sl_strategy(bybit_client)
 
 

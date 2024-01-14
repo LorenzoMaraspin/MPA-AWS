@@ -36,9 +36,13 @@ def get_config(event):
         },
         'ssm': {
             'ops_1_name': os.environ['SSM_OPERATIVE_1_TRADE'],
-            'ops_1_value': get_parameter_value(os.environ['SSM_OPERATIVE_1_TRADE']),
+            'ops-1': get_parameter_value(os.environ['SSM_OPERATIVE_1_TRADE']),
             'ops_2_name': os.environ['SSM_OPERATIVE_2_TRADE'],
-            'ops_2_value': get_parameter_value(os.environ['SSM_OPERATIVE_2_TRADE']),
+            'ops-2': get_parameter_value(os.environ['SSM_OPERATIVE_2_TRADE']),
+            'ops_3_name': os.environ['SSM_OPERATIVE_3_TRADE'],
+            'ops-3': get_parameter_value(os.environ['SSM_OPERATIVE_3_TRADE']),
+            'ops_4_name': os.environ['SSM_OPERATIVE_4_TRADE'],
+            'ops-4': get_parameter_value(os.environ['SSM_OPERATIVE_4_TRADE']),
         }
     }
     return config
