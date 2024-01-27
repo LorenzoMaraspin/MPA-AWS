@@ -34,7 +34,8 @@ class BybitModel:
         balance = float(wallet_balance['coin'][0]['walletBalance'])
         leverage = int(self._config['bybit']['buy_leverage'])
         risk = float(self._config['bybit']['trade_size'])
-        quantity = ((balance * risk) * leverage) / float(self._price)
+
+        quantity = (balance * risk * leverage) / float(self._price)
 
         logger.append_keys(
             balance=balance,
@@ -43,7 +44,7 @@ class BybitModel:
             quantity=f"{quantity:.3f}"
         )
         logger.info("Calculated the quantity used to open a position")
-        self._qty = f"{quantity:.3f}"
+        self._qty = f"{quantity:.2f}"
 
     def set_multiple_tp_sl(self, tp_sl_list):
         trade_tp_sl = []

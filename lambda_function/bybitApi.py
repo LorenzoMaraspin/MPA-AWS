@@ -51,10 +51,7 @@ class BybitApi:
                 symbol=self._config['bybit']['symbol'],
                 side=self._config['event']['side'],
                 orderType=self._config['bybit']['order_type'],
-                qty=qty,
-                positionIdx=0,
-                price=self._config['event']['price'],
-                marketUnit=self._config['bybit']['market_unit'],
+                qty=str(qty),
                 reduceOnly=False
             )
             logger.append_keys(
@@ -119,4 +116,66 @@ class BybitApi:
                 logger.info(f"Setted up TP/SL for position: {self._config['bybit']['symbol']}")
         except Exception as e:
             logger.info(f"Unable to set TP/SL details for position: {self._config['bybit']['symbol']}, {e}")
+            raise e
+    def switch_margin_mode(self):
+        logger.info(f"Trying to switch margin mode: {self._config['bybit']['symbol']}")
+        try:
+            response = self._session.switch_margin_mode(
+                category=self._config['bybit']['category'],
+                symbol=self._config['bybit']['symbol'],
+                tradeMode=self._config['bybit']['trade_mode'],
+                buyLeverage=self._config['bybit']['buy_leverage'],
+                sellLeverage=self._config['bybit']['sell_leverage'],
+            )
+            if response['retMsg'] == 'OK':
+                logger.append_keys(
+                    category=self._config['bybit']['category'],
+                    symbol=self._config['bybit']['symbol'],
+                    tradeMode=self._config['bybit']['trade_mode'],
+                    buyLeverage=self._config['bybit']['buy_leverage'],
+                    sellLeverage=self._config['bybit']['sell_leverage']
+                )
+                logger.info(f"Switched margin mode for position: {self._config['bybit']['symbol']}")
+        except Exception as e:
+            logger.info(f"Unable to switch margin mode position: {self._config['bybit']['symbol']}, {e}")
+            raise e
+
+    def set_leverage(self):
+        logger.info(f"Trying to set leverage: {self._config['bybit']['symbol']}")
+        try:
+            response = self._session.set_leverage(
+                category=self._config['bybit']['category'],
+                symbol=self._config['bybit']['symbol'],
+                buyLeverage=self._config['bybit']['buy_leverage'],
+                sellLeverage=self._config['bybit']['sell_leverage']
+            )
+            if response['retMsg'] == 'OK':
+                logger.append_keys(
+                    category=self._config['bybit']['category'],
+                    symbol=self._config['bybit']['symbol'],
+                    buyLeverage=self._config['bybit']['buy_leverage'],
+                    sellLeverage=self._config['bybit']['sell_leverage']
+                )
+                logger.info(f"Setted leverage for position: {self._config['bybit']['symbol']}")
+        except Exception as e:
+            logger.info(f"Unable to set leverage position: {self._config['bybit']['symbol']}, {e}")
+            raise e
+    def switch_position_mode(self):
+        logger.info(f"Trying to change position mode: {self._config['bybit']['symbol']}")
+        try:
+            response = self._session.switch_position_mode(
+                category=self._config['bybit']['category'],
+                symbol=self._config['bybit']['symbol'],
+                mode=3
+            )
+            if response['retMsg'] == 'OK':
+                logger.append_keys(
+                    category=self._config['bybit']['category'],
+                    symbol=self._config['bybit']['symbol'],
+                    mode=0,
+                    coin=self._config['bybit']['position_coin']
+                )
+                logger.info(f"Change position modefor position: {self._config['bybit']['symbol']}")
+        except Exception as e:
+            logger.info(f"Unable to change position mode: {self._config['bybit']['symbol']}, {e}")
             raise e

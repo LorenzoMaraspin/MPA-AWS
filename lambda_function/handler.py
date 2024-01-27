@@ -19,9 +19,14 @@ def main(config):
     wallet = bybit_client.get_wallet_balance()
     model.calculate_qty_based_on_balance(wallet)
 
+    # SET POSITION MODE
+
+    #bybit_client.switch_margin_mode()
+    #bybit_client.set_leverage()
+    #bybit_client.switch_position_mode()
     # CHECK if there are OPEN POSITION to close BEFORE to OPEN NEW POSITION
     position = bybit_client.get_position_info()
-    if position['side']:
+    if position['side'] and position['side'] != 'None':
         side = 'Sell' if position['side'] == 'Buy' else 'Buy'
         bybit_client.close_position(side)
 

@@ -26,6 +26,7 @@ def get_config(event):
             "sell_leverage": os.environ['BYBIT_SELL_LEVERAGE'],
             "trade_size": os.environ['BYBIT_SIZE_TRADE'],
             "symbol": os.environ['BYBIT_SYMBOL'],
+            "position_coin": os.environ['BYBIT_POSITION_COIN'],
             "trading_management": get_parameter_value(os.environ['BYBIT_TRADE_MANAGEMENT']),
             "trading_management_index": 0 if os.environ['BYBIT_TRADE_MANAGEMENT'] == 2 else int(os.environ['BYBIT_TRADE_INDEX'])
         },
