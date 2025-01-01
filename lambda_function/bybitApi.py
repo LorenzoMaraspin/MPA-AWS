@@ -136,9 +136,12 @@ class BybitApi:
                     sellLeverage=self._config['bybit']['sell_leverage']
                 )
                 logger.info(f"Switched margin mode for position: {self._config['bybit']['symbol']}")
+                return True
         except Exception as e:
             logger.info(f"Unable to switch margin mode position: {self._config['bybit']['symbol']}, {e}")
-            raise e
+            if 110026 == e.status_code:
+                logger.info("Cannot switch from Cross to Isolated Margin")
+                return False
 
     def set_leverage(self):
         logger.info(f"Trying to set leverage: {self._config['bybit']['symbol']}")
@@ -157,9 +160,12 @@ class BybitApi:
                     sellLeverage=self._config['bybit']['sell_leverage']
                 )
                 logger.info(f"Setted leverage for position: {self._config['bybit']['symbol']}")
+                return True
         except Exception as e:
             logger.info(f"Unable to set leverage position: {self._config['bybit']['symbol']}, {e}")
-            raise e
+            if 110043 == e.status_code:
+                logger.info(e.message)
+                return False
     def switch_position_mode(self):
         logger.info(f"Trying to change position mode: {self._config['bybit']['symbol']}")
         try:
@@ -176,6 +182,9 @@ class BybitApi:
                     coin=self._config['bybit']['position_coin']
                 )
                 logger.info(f"Change position modefor position: {self._config['bybit']['symbol']}")
+                return True
         except Exception as e:
             logger.info(f"Unable to change position mode: {self._config['bybit']['symbol']}, {e}")
-            raise e
+            if 110025 == e.status_code:
+                logger.info(e.message)
+                return False

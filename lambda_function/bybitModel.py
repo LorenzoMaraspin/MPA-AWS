@@ -5,6 +5,8 @@ logger = Logger()
 
 class BybitModel:
     def __init__(self, config):
+        self._stop_loss = None
+        self._take_profit = None
         self._config = config
         self._order_type = self._config['bybit']['order_type']
         self._category = self._config['bybit']['category']
@@ -31,14 +33,14 @@ class BybitModel:
         return result
 
     def calculate_qty_based_on_balance(self, wallet_balance):
-        balance = float(wallet_balance['coin'][0]['walletBalance'])
+        self._balance = float(wallet_balance['coin'][0]['walletBalance'])
         leverage = int(self._config['bybit']['buy_leverage'])
         risk = float(self._config['bybit']['trade_size'])
 
-        quantity = (balance * risk * leverage) / float(self._price)
+        quantity = (self._balance * risk * leverage) / float(self._price)
 
         logger.append_keys(
-            balance=balance,
+            balance=self._balance,
             leverage=leverage,
             risk=risk,
             quantity=f"{quantity:.3f}"
@@ -48,6 +50,7 @@ class BybitModel:
 
     def set_multiple_tp_sl(self, tp_sl_list):
         trade_tp_sl = []
+        logger.info(f"Tp/Sl to add to the trade: {tp_sl_list}")
         if not isinstance(tp_sl_list, list):
             logger.error(f"The list of tp provided it's not a list")
             raise TypeError
@@ -68,28 +71,6 @@ class BybitModel:
             for item in ops_details:
                 bybit_api.set_tp_sl(item, 'Partial')
             logger.info(f"Selected operative type: {operativity}: {ops_details}")
-        else:
-            index = self._config['bybit']['trading_management_index']
-            operativity_selected = self._config['ssm']['ops_2_value']
-            ops_details = self.set_multiple_tp_sl(operativity_selected[index])
-            bybit_api.set_tp_sl(ops_details[index], 'Full')
-            logger.info(f"Selected operative type: OPS-3: {ops_details[index]}")
-
-    def choose_tp_sl_strategy_v2(self, bybit_api):
-        operativity = str(self._config['bybit']['trading_management'])
-
-        if operativity == 'OPS-1':
-            operativity_selected = self._config['ssm']['ops_1_value']
-            ops_details = self.set_multiple_tp_sl(operativity_selected)
-            for item in ops_details:
-                bybit_api.set_tp_sl(item, 'Partial')
-            logger.info(f"Selected operative type: OPS-1: {ops_details}")
-        elif operativity == 'OPS-2':
-            operativity_selected = self._config['ssm']['ops_2_value']
-            ops_details = self.set_multiple_tp_sl(operativity_selected)
-            for item in ops_details:
-                bybit_api.set_tp_sl(item, 'Partial')
-            logger.info(f"Selected operative type: OPS-2: {ops_details}")
         else:
             index = self._config['bybit']['trading_management_index']
             operativity_selected = self._config['ssm']['ops_2_value']

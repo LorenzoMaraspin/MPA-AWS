@@ -31,9 +31,9 @@ def get_config(event):
             "trading_management_index": 0 if os.environ['BYBIT_TRADE_MANAGEMENT'] == 2 else int(os.environ['BYBIT_TRADE_INDEX'])
         },
         'event': {
-            'message': event['message'],
-            'side': "Buy" if 'Long' in event['message'] else "Sell",
-            'price': re.findall(r'\d+\.?\d*', event['message'])[0]
+            'side': "Buy" if 'Long' in event['side'] else "Sell",
+            'price': event['price'],
+            'symbol': event['symbol']
         },
         'ssm': {
             'ops_1_name': os.environ['SSM_OPERATIVE_1_TRADE'],
